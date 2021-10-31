@@ -11,5 +11,9 @@ homepage = "https://github.com/wesauis/adbi"
 edition = "2021"
 
 [dependencies]
-  colored = "2"
-  regex = "1.5"
+color-eyre = "0.5"
+colored = "2"
+regex = "1.5"
+
+[profile.dev.package.backtrace]
+opt-level = 3

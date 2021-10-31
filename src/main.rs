@@ -1,54 +1,50 @@
-mod log;
-mod addon;
-mod adbi;
-
-use std::process::Command;
-
+use color_eyre::{eyre::eyre, Result};
 use colored::*;
-use crate::adbi::common::adb_bin;
+
+mod adbi;
+mod addon;
+
+use crate::adbi::common::adb_exec;
 use crate::adbi::make_wireless::get_device_ip;
-use crate::log::info;
 
+fn main() -> Result<()> {
+    color_eyre::install()?;
 
-fn main() {
-  log::init();
-
-  if let Err(msg) = adbi() {
-    log::error(&msg);
-    std::process::exit(1);
-  }
+    adbi()?;
+    Ok(())
 }
 
-fn adbi() -> Result<(), String> {
-  let port = 55555;
+fn adbi() -> Result<()> {
+    let port = 55555;
 
-  let adb_bin = adb_bin()?;
-  let device_ip = get_device_ip(&adb_bin)?;
-  info(&format!("device found at {}", device_ip));
+    let device_ip = get_device_ip()?;
+    println!("device found at {}", device_ip);
 
-  // adb tcpip $PORT
-  if !Command::new(&adb_bin)
-      .args(&["tcpip", &55555.to_string()])
-      .output()
-      .map(|output| output.status.success())
-      .map_err(|_| "unable to run adb, the executable exists?")? {
-    return Err(format!("unable to start adb at tcpip mode at port {}", port));
-  }
-  info(&format!("started adb in tcpip mode at port {}", port));
+    // adb tcpip $PORT
+    if !adb_exec(&["tcpip", &port.to_string()])?
+        .status
+        .success()
+    {
+        return Err(eyre!(format!(
+            "unable to start adb at tcpip mode at port {}",
+            port
+        )));
+    }
+    println!("started adb in tcpip mode at port {}", port);
 
-  // adb connect "$IP:$PORT"
-  if !Command::new(&adb_bin)
-      .args(&["connect", &format!("{}:{}", device_ip, port)])
-      .output()
-      .map(|output| output.status.success())
-      .map_err(|_| "unable to run adb, the executable exists?")? {
-    return Err(format!("unable connect to device at {}:{}", device_ip, port));
-  }
-  info(&format!("connected to {}:{}", device_ip, port));
+    // adb connect "$IP:$PORT"
+    if !adb_exec(&["connect", &format!("{}:{}", device_ip, port)])?
+        .status
+        .success()
+    {
+        return Err(eyre!("unable connect to device at {}:{}", device_ip, port));
+    }
+    println!("connected to {}:{}", device_ip, port);
 
-  println!("{}", " you can detach your device now! ".black().on_cyan());
-  Ok(())
+    // todo!("spantrace");
+    // todo!("logging");
+    // todo!("opt args");
+
+    println!("{}", " you can detach your device now! ".black().on_cyan());
+    Ok(())
 }
-
-
-

@@ -4,5 +4,7 @@
     "source.fixAll": true,
     "source.organizeImports": true
   },
-  "rust-client.channel": "stable"
+  "[rust]": {
+    "editor.defaultFormatter": "matklad.rust-analyzer"
+  }
 }
