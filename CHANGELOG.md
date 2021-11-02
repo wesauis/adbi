@@ -1,14 +1,15 @@
 # [Changelog](https://keepachangelog.com)
 ## [Unreleased]
 ### TODO
-- [ ] update the flow + use color_eyre
-    - [ ] get sdk_root
-    - [ ] get adb_bin
-    - [ ] check version and log it
-    - [ ] start server, if it does, log it
-    - [ ] enable tcpip mode at port and log it
-    - [ ] get device ip and log it
-    - [ ] connect to device
+- [ ] update the flow + color_eyre
+    - [x] get sdk_root
+    - [x] get adb_bin
+    - [x] check version and log it
+    - [x] start server, if it does, log it
+    - [x] enable tcpip mode at port and log it
+    - [x] get device ip and log it
+    - [x] connect to device
+    - [ ] eyre
 - [ ] command line arguments
 - [ ] debug logs - `DEBUG=1`
     - [ ] ANDROID_SDK_ROOT=""

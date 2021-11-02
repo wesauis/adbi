@@ -1,12 +1,12 @@
-use color_eyre::{eyre::eyre, Result};
+use color_eyre::Result;
 use colored::*;
 
+mod adb;
 use crate::adb::ADB;
 
 mod addon;
-mod adb;
 
-const PORT: i32 = 55555;
+const PORT: u16 = 55555;
 
 fn main() -> Result<()> {
     color_eyre::install()?;
@@ -16,22 +16,10 @@ fn main() -> Result<()> {
     let device_ip = adb.get_device_ip()?;
     println!("device found at {}", device_ip);
 
-    // adb tcpip $PORT
-    if !adb.exec(&["tcpip", &PORT.to_string()])?
-        .status
-        .success()
-    {
-        return Err(eyre!("unable to start adb at tcpip mode at port {}", &PORT));
-    }
+    adb.listen_tcpip(&PORT)?;
     println!("started adb in tcpip mode at port {}", &PORT);
 
-    // adb connect "$IP:$PORT"
-    if !adb.exec(&["connect", &format!("{}:{}", device_ip, &PORT)])?
-        .status
-        .success()
-    {
-        return Err(eyre!("unable connect to device at {}:{}", device_ip, &PORT));
-    }
+    adb.remote_connect(&device_ip, &PORT)?;
     println!("connected to {}:{}", device_ip, &PORT);
 
     // todo!("spantrace");
