@@ -1,45 +1,38 @@
 use color_eyre::{eyre::eyre, Result};
 use colored::*;
 
-mod adbi;
-mod addon;
+use crate::adb::ADB;
 
-use crate::adbi::common::adb_exec;
-use crate::adbi::make_wireless::get_device_ip;
+mod addon;
+mod adb;
+
+const PORT: i32 = 55555;
 
 fn main() -> Result<()> {
     color_eyre::install()?;
 
-    adbi()?;
-    Ok(())
-}
+    let adb = ADB::find()?;
 
-fn adbi() -> Result<()> {
-    let port = 55555;
-
-    let device_ip = get_device_ip()?;
+    let device_ip = adb.get_device_ip()?;
     println!("device found at {}", device_ip);
 
     // adb tcpip $PORT
-    if !adb_exec(&["tcpip", &port.to_string()])?
+    if !adb.exec(&["tcpip", &PORT.to_string()])?
         .status
         .success()
     {
-        return Err(eyre!(format!(
-            "unable to start adb at tcpip mode at port {}",
-            port
-        )));
+        return Err(eyre!("unable to start adb at tcpip mode at port {}", &PORT));
     }
-    println!("started adb in tcpip mode at port {}", port);
+    println!("started adb in tcpip mode at port {}", &PORT);
 
     // adb connect "$IP:$PORT"
-    if !adb_exec(&["connect", &format!("{}:{}", device_ip, port)])?
+    if !adb.exec(&["connect", &format!("{}:{}", device_ip, &PORT)])?
         .status
         .success()
     {
-        return Err(eyre!("unable connect to device at {}:{}", device_ip, port));
+        return Err(eyre!("unable connect to device at {}:{}", device_ip, &PORT));
     }
-    println!("connected to {}:{}", device_ip, port);
+    println!("connected to {}:{}", device_ip, &PORT);
 
     // todo!("spantrace");
     // todo!("logging");
